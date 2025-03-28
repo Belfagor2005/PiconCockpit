@@ -17,9 +17,10 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
+#
+# 20250328 recoded from @Lululla
 
-
-import os
+from os.path import exists, normpath
 from Components.ConfigList import ConfigListScreen
 from Components.config import config, configfile, getConfigListEntry, ConfigText, ConfigPassword
 from Components.Button import Button
@@ -31,19 +32,40 @@ from Screens.MessageBox import MessageBox
 from Screens.VirtualKeyBoard import VirtualKeyBoard
 from Screens.Standby import TryQuitMainloop
 from enigma import eTimer, ePoint
+
 from .__init__ import _
 from .Version import PLUGIN
 from .Debug import logger, log_levels, setLogLevel
-from .SkinUtils import getSkinName
 from .ConfigScreenInit import ConfigScreenInit
 
 
 class ConfigScreen(ConfigScreenInit, ConfigListScreen, Screen):
+	skin = """
+			<screen name="ConfigScreen" position="center,110" size="1800,930" title="">
+				<ePixmap pixmap="skin_default/buttons/red.svg" position="10,5" size="300,70"/>
+				<ePixmap pixmap="skin_default/buttons/green.svg" position="310,5" size="300,70"/>
+				<ePixmap pixmap="skin_default/buttons/yellow.svg" position="610,5" size="300,70"/>
+				<ePixmap pixmap="skin_default/buttons/blue.svg" position="910,5" size="300,70"/>
+				<widget backgroundColor="#f23d21" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_red" position="10,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
+				<widget backgroundColor="#389416" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_green" position="310,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
+				<widget backgroundColor="#e6bd00" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_yellow" position="610,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
+				<widget backgroundColor="#0064c7" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_blue" position="910,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
+				<widget font="Regular;34" halign="right" position="1240,0" render="Label" size="400,70" source="global.CurrentTime" valign="center">
+					<convert type="ClockToText">Date</convert>
+				</widget>
+				<widget font="Regular;34" halign="right" position="1650,0" render="Label" size="120,70" source="global.CurrentTime" valign="center">
+					<convert type="ClockToText">Default</convert>
+				</widget>
+				<eLabel backgroundColor="#aaaaaa" position="10,80" size="1780,1"/>
+				<widget enableWrapAround="1" itemHeight="45" name="config" position="10,90" scrollbarMode="showOnDemand" size="1780,630"/>
+				<eLabel backgroundColor="#aaaaaa" position="10,730" size="1780,1"/>
+				<widget font="Regular;32" halign="center" position="10,740" render="Label" size="1780,180" source="help" valign="center"/>
+			</screen>
+			"""
 
 	def __init__(self, session, config_plugins_plugin):
 		self.config_plugins_plugin = config_plugins_plugin
 		Screen.__init__(self, session)
-		self.skinName = getSkinName("ConfigScreen")
 		self["actions"] = ActionMap(
 			["ColorActions", "SetupActions"],
 			{
@@ -80,7 +102,10 @@ class ConfigScreen(ConfigScreenInit, ConfigListScreen, Screen):
 		self.needs_restart = False
 
 		self.reload_timer = eTimer()
-		self.reload_timer_conn = self.reload_timer.timeout.connect(self.createConfig)
+		try:
+			self.reload_timer.callback.append(self.createConfig)
+		except:
+			self.reload_timer_conn = self.reload_timer.timeout.connect(self.createConfig)
 
 		self["config"].selectionChanged = self.selectionChanged
 		self["config"].onSelectionChanged.append(self.updateHelp)
@@ -199,7 +224,7 @@ class ConfigScreen(ConfigScreenInit, ConfigListScreen, Screen):
 
 	def dirSelected(self, adir):
 		if adir:
-			adir = os.path.normpath(adir)
+			adir = normpath(adir)
 			if self["config"].getCurrent()[2]:
 				if self["config"].getCurrent()[2](adir):
 					self["config"].getCurrent()[1].value = adir
@@ -270,7 +295,7 @@ class ConfigScreen(ConfigScreenInit, ConfigListScreen, Screen):
 
 	def openLocationBox(self, element):
 		if element:
-			path = os.path.normpath(element.value)
+			path = normpath(element.value)
 			self.session.openWithCallback(
 				self.dirSelected,
 				LocationBox,
@@ -286,10 +311,10 @@ class ConfigScreen(ConfigScreenInit, ConfigListScreen, Screen):
 
 	def validatePath(self, element):
 		if isinstance(element, str):
-			adir = os.path.normpath(element)
+			adir = normpath(element)
 		else:
-			adir = os.path.normpath(element.value)
-		valid = os.path.exists(adir)
+			adir = normpath(element.value)
+		valid = exists(adir)
 		if not valid:
 			self.session.open(MessageBox, _("Path does not exist") + ": " + adir, MessageBox.TYPE_ERROR)
 		return valid

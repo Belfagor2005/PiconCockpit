@@ -17,12 +17,13 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
+#
+# 20250328 recoded from @Lululla
 
-
-import os
+from os import makedirs, popen, remove, rename
 import uuid
-from twisted.web.client import downloadPage
-from APIs.ServiceData import getServiceList, getTVBouquets, getRadioBouquets
+import glob
+from os.path import exists, join, dirname
 from Screens.Screen import Screen
 from Screens.MessageBox import MessageBox
 from Components.Pixmap import Pixmap
@@ -30,41 +31,75 @@ from Components.Button import Button
 from Components.ActionMap import ActionMap
 from Components.config import config, configfile
 from Tools.LoadPixmap import LoadPixmap
+
+import requests
+from requests.exceptions import RequestException
+from twisted.internet import reactor
+# from twisted.internet import threads
+
 from .Debug import logger
-from .__init__ import _
+from . import _
 from .FileUtils import readFile, createDirectory
 from .ConfigScreen import ConfigScreen
 from .PiconDownloadProgress import PiconDownloadProgress
 from .ConfigInit import ConfigInit
-from .SkinUtils import getSkinName
 from .CockpitContextMenu import CockpitContextMenu
 from .List import List
-
+from .ServiceData import getServiceList, getTVBouquets, getRadioBouquets
 
 picon_info_file = "picon_info.txt"
 picon_list_file = "zz_picon_list.txt"
 
 
 class PiconCockpit(Screen):
+
+	skin = """
+		<screen name="PICPiconCockpit" position="center,110" size="1800,930">
+			<ePixmap pixmap="skin_default/buttons/red.svg" position="10,5" size="300,70" />
+			<ePixmap pixmap="skin_default/buttons/green.svg" position="310,5" size="300,70" />
+			<ePixmap pixmap="skin_default/buttons/yellow.svg" position="610,5" size="300,70" />
+			<ePixmap pixmap="skin_default/buttons/blue.svg" position="910,5" size="300,70" />
+			<widget backgroundColor="#f23d21" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_red" position="10,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
+			<widget backgroundColor="#389416" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_green" position="310,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
+			<widget backgroundColor="#e6bd00" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_yellow" position="610,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
+			<widget backgroundColor="#0064c7" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_blue" position="910,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
+			<widget font="Regular;34" halign="right" position="1240,0" render="Label" size="400,70" source="global.CurrentTime" valign="center">
+				<convert type="ClockToText">Date</convert>
+			</widget>
+			<widget font="Regular;34" halign="right" position="1650,0" render="Label" size="120,70" source="global.CurrentTime" valign="center">
+				<convert type="ClockToText">Default</convert>
+			</widget>
+			<widget name="preview" position="1386,97" scale="aspect" size="400,240" zPosition="5" />
+			<widget font="Regular;30" itemHeight="40" name="list" position="5,100" scrollbarMode="showOnDemand" size="1370,800" transparent="1" />
+		</screen>
+		"""
+
 	def __init__(self, session):
+
 		logger.info("...")
 		Screen.__init__(self, session)
-		self.skinName = getSkinName("PiconCockpit")
-
+		self["list"] = List()
 		self["actions"] = ActionMap(
-			["OkCancelActions", "ColorActions", "MenuActions"],
+			["OkCancelActions", "SetupActions", "ColorActions", "MenuActions"],
 			{
-				"menu":		self.openContextMenu,
-				"cancel":	self.exit,
-				"red":		self.exit,
-				"green":	self.green,
+				"menu":     self.openContextMenu,
+				"cancel":   self.exit,
+				"red":      self.exit,
+				"green":    self.green,
+
+				"left": self.keyLeft,
+				"down": self.keyDown,
+				"up": self.keyUp,
+				"right": self.keyRight,
 			},
-			prio=-1
+			-1
 		)
 
+		# self.onChangedEntry = []
+		self.current_preview_path = None
 		self.last_picon_set = config.plugins.piconcockpit.last_picon_set.value
 		self.setTitle(_("PiconCockpit"))
-		self["list"] = List()
+		# self["list"].onSelectionChanged.append(self.onSelectionChanged)
 		self["preview"] = Pixmap()
 		self["key_green"] = Button(_("Download"))
 		self["key_red"] = Button(_("Exit"))
@@ -73,14 +108,26 @@ class PiconCockpit(Screen):
 		self.first_start = True
 		self.onLayoutFinish.append(self.__onLayoutFinish)
 
-	def onSelectionChanged(self):
-		logger.info("...")
-		self.downloadPreview()
+	def move(self, direction):
+		self['list'].instance.moveSelection(direction)
+		self.createList(True)
+
+	def keyUp(self):
+		self.move(self['list'].instance.moveUp)
+
+	def keyDown(self):
+		self.move(self['list'].instance.moveDown)
+
+	def keyLeft(self):
+		self.move(self['list'].instance.pageUp)
+
+	def keyRight(self):
+		self.move(self['list'].instance.pageDown)
 
 	def __onLayoutFinish(self):
 		logger.info("...")
-		self.picon_dir = config.usage.configselection_piconspath.value
-		if not os.path.exists(self.picon_dir):
+		self.picon_dir = config.usage.picon_dir.value
+		if not exists(self.picon_dir):
 			createDirectory(self.picon_dir)
 		if self.first_start:
 			self.first_start = False
@@ -90,21 +137,63 @@ class PiconCockpit(Screen):
 
 	def getPiconSetInfo(self):
 		logger.info("...")
-		url = os.path.join(config.plugins.piconcockpit.picon_server.value, "picons", picon_info_file)
-		download_file = os.path.join(self.picon_dir, picon_info_file).replace(" ", "%20")
+		url = join(config.plugins.piconcockpit.picon_server.value, "picons", picon_info_file)
+		download_file = join(self.picon_dir, picon_info_file)
+
+		if isinstance(url, bytes):
+			url = url.decode('utf-8')
+		if isinstance(download_file, bytes):
+			download_file = download_file.decode('utf-8')
+
 		logger.debug("url: %s, download_file: %s", url, download_file)
-		downloadPage(url, download_file).addCallback(self.gotPiconSetInfo).addErrback(self.downloadError, url)
+
+		try:
+			from twisted.internet import reactor
+			reactor.callInThread(
+				self.threadDownloadFile,
+				url,
+				download_file,
+				self.gotPiconSetInfo,
+				self.downloadError
+			)
+		except Exception as e:
+			logger.error("Error in getPiconSetInfo: %s", str(e))
+			self.downloadError(e, url)
+
+	def threadDownloadFile(self, url, destination, success_callback, error_callback):
+		try:
+			logger.debug("Starting download from %s to %s", url, destination)
+			makedirs(dirname(destination), exist_ok=True)
+			response = requests.get(url, stream=True, timeout=(3.05, 6))
+			response.raise_for_status()
+
+			with open(destination, 'wb') as f:
+				for chunk in response.iter_content(chunk_size=8192):
+					if chunk:
+						f.write(chunk)
+
+			logger.debug("Download completed successfully")
+			reactor.callFromThread(success_callback, destination)
+
+		except RequestException as e:
+			logger.error("Download failed: %s", str(e))
+			reactor.callFromThread(error_callback, e, url)
+		except Exception as e:
+			logger.error("Unexpected error: %s", str(e))
+			reactor.callFromThread(error_callback, e, url)
 
 	def gotPiconSetInfo(self, result):
-		logger.info("result: %s", result)
+		logger.info("Download complete: %s", result)
 		self.createList(True)
-		self.onSelectionChanged()
+		# self.onSelectionChanged()
 
-	def downloadError(self, result, url):
-		logger.info("...")
-		logger.error("url: %s, result: %s", url, result)
-		self.session.open(MessageBox, _("Picon server access failed"), MessageBox.TYPE_ERROR)
-		self.createList(False)
+	def downloadError(self, error, url):
+		logger.error("Download failed for %s: %s", url, str(error))
+		self.session.open(
+			MessageBox,
+			_("Download failed: %s") % str(error),
+			type=MessageBox.TYPE_ERROR
+		)
 
 	def openContextMenu(self):
 		self.session.open(
@@ -133,17 +222,36 @@ class PiconCockpit(Screen):
 			config.plugins.piconcockpit.last_picon_set.value = picon_set[4]
 			config.plugins.piconcockpit.last_picon_set.save()
 			configfile.save()
-			os.popen("rm /tmp/*.png")
+			popen("rm /tmp/*.png")
 		self.close()
 
 	def green(self):
 		picon_set = self["list"].getCurrent()
 		logger.debug("picon_set: %s", str(picon_set))
 		if picon_set:
-			url = os.path.join(picon_set[1], picon_list_file).replace(" ", "%20")
-			download_file = os.path.join(self.picon_dir, picon_list_file)
-			logger.debug("url: %s, download_file: %s", url, download_file)
-			downloadPage(url, download_file).addCallback(self.downloadPicons, picon_set).addErrback(self.downloadError, url)
+			try:
+				url = join(picon_set[1], picon_list_file)
+				download_file = join(self.picon_dir, picon_list_file)
+
+				if isinstance(url, bytes):
+					url = url.decode('utf-8')
+				if isinstance(download_file, bytes):
+					download_file = download_file.decode('utf-8')
+				logger.debug("url: %s, download_file: %s", url, download_file)
+				reactor.callInThread(
+					self.threadDownloadFile,
+					url,
+					download_file,
+					lambda result=None: self.downloadPicons(download_file, picon_set),
+					lambda error, url=url: self.downloadError(error, url)
+				)
+			except Exception as e:
+				logger.error("Error in green(): %s", str(e))
+				self.session.open(
+					MessageBox,
+					_("Failed to start download: %s") % str(e),
+					type=MessageBox.TYPE_ERROR
+				)
 
 	def listBouquetServices(self):
 		logger.info("...")
@@ -174,40 +282,49 @@ class PiconCockpit(Screen):
 				logger.debug("skipping picon: %s", picon)
 		return picons
 
+	def onSelectionChanged(self):
+		logger.info("...")
+		self.downloadPreview()
+
 	def downloadPicons(self, _result=None, picon_set=None):
 		logger.info("...")
 		if config.plugins.piconcockpit.all_picons.value:
-			picons = readFile(os.path.join(self.picon_dir, picon_list_file)).splitlines()
+			picons = readFile(join(self.picon_dir, picon_list_file)).splitlines()
 		else:
 			picons = self.getUserBouquetPicons()
 		logger.debug("picons: %s", picons)
 		if picons:
 			if config.plugins.piconcockpit.delete_before_download:
-				os.popen("rm " + os.path.join(self.picon_dir, "*.png"))
+				popen("rm " + join(self.picon_dir, "*.png"))
 			self.session.open(PiconDownloadProgress, picon_set[1], picons, self.picon_dir)
 
 	def createList(self, fill):
 		logger.info("fill: %s", fill)
 		self['list'].onSelectionChanged = []
-		picon_list = []
 		self["preview"].hide()
-		start_index = -1
+		picon_list = []
+		# start_index = -1
 		if fill:
-			picon_set_list = readFile(os.path.join(self.picon_dir, picon_info_file)).splitlines()
-			self.parseSettingsOptions(picon_set_list)
-			picon_list = self.parsePiconSetList(picon_set_list)
-			picon_list.sort(key=lambda x: x[0])
-			for i, picon_set in enumerate(picon_list):
-				picon_set = picon_set[0]
-				if picon_set[4] == self.last_picon_set:
-					logger.debug("picon_set: %s, last_picon_set: %s", picon_set[4], self.last_picon_set)
-					start_index = i
-					break
+			try:
+				picon_set_list = readFile(join(self.picon_dir, picon_info_file)).splitlines()
+				self.parseSettingsOptions(picon_set_list)
+				picon_list = self.parsePiconSetList(picon_set_list)
+				picon_list.sort(key=lambda x: x[0])
+				for i, picon_set in enumerate(picon_list):
+					picon_set = picon_set[0]
+					if picon_set[4] == self.last_picon_set:
+						# start_index = i
+						break
+			except Exception as e:
+				logger.error("Error creating list: %s", str(e))
+
 		self["list"].setList(picon_list)
 		self['list'].onSelectionChanged.append(self.onSelectionChanged)
-		logger.debug("start_index: %s", start_index)
+		"""
 		if start_index >= 0:
 			self["list"].moveToIndex(start_index)
+		"""
+		self.onSelectionChanged()
 
 	def parseSettingsOptions(self, picon_set_list):
 		logger.info("...")
@@ -234,8 +351,8 @@ class PiconCockpit(Screen):
 			if not picon_set.startswith('<meta'):
 				info_list = picon_set.split(';')
 				if len(info_list) >= 9:
-					dir_url = os.path.join(config.plugins.piconcockpit.picon_server.value, info_list[0])
-					pic_url = os.path.join(config.plugins.piconcockpit.picon_server.value, info_list[0], info_list[1])
+					dir_url = join(config.plugins.piconcockpit.picon_server.value, info_list[0])
+					pic_url = join(config.plugins.piconcockpit.picon_server.value, info_list[0], info_list[1])
 					date = info_list[2]
 					name = info_list[3]
 					satellite = info_list[4]
@@ -247,9 +364,9 @@ class PiconCockpit(Screen):
 					signature = "%s | %s - %s | %s | %s | %s" % (satellite, creator, name, size, bit, uploader)
 					name = signature + " | %s" % date
 					if config.plugins.piconcockpit.satellite.value in ["all", satellite] and\
-						config.plugins.piconcockpit.creator.value in ["all", creator] and\
-						config.plugins.piconcockpit.size.value in ["all", size] and\
-						config.plugins.piconcockpit.bit.value in ["all", bit]:
+							config.plugins.piconcockpit.creator.value in ["all", creator] and\
+							config.plugins.piconcockpit.size.value in ["all", size] and\
+							config.plugins.piconcockpit.bit.value in ["all", bit]:
 						picon_list.append(((name, dir_url, pic_url, identifier, signature), ))
 		# logger.debug("picon_list: %s", picon_list)
 		return picon_list
@@ -257,20 +374,99 @@ class PiconCockpit(Screen):
 	def downloadPreview(self):
 		logger.info("...")
 		self["preview"].hide()
-		if self['list'].getCurrent():
-			logger.debug("current: %s", self["list"].getCurrent())
-			url = self['list'].getCurrent()[2].replace(" ", "%20")
-			logger.debug("url: %s", url)
-			picon_path = os.path.join("/tmp", self['list'].getCurrent()[3] + ".png")
-			if not os.path.exists(picon_path):
-				try:
-					downloadPage(url, picon_path).addCallback(self.showPreview, picon_path).addErrback(self.showPreview, picon_path)
-				except Exception as e:
-					logger.error("url: %s, e: %s", url, e)
-			else:
-				self.showPreview(None, picon_path)
+		current_item = self['list'].getCurrent()
+		if not current_item:
+			return
 
-	def showPreview(self, _result=None, path=None):
-		logger.info("path: %s", path)
-		self["preview"].show()
-		self["preview"].instance.setPixmap(LoadPixmap(path, cached=False, size=self["preview"].instance.size()))
+		logger.debug("current: %s", current_item)
+		url = current_item[2]
+		if isinstance(url, bytes):
+			url = url.decode('utf-8')
+
+		print('current_item=', current_item)
+
+		if isinstance(url, bytes):
+			url = url.decode('utf-8')
+		url = url.replace(" ", "%20") if url else ""
+
+		if not url or not isinstance(url, str):
+			logger.error("URL non valido: %s", url)
+			return
+
+		print('url=', url)
+
+		picon_filename = f"{hash(url)}.png"
+		picon_path = join("/tmp", picon_filename)
+
+		# DEBUG - Verifica se il file esiste
+		logger.debug("Verifico se esiste: %s", picon_path)
+		if exists(picon_path):
+			logger.debug("Trovato file esistente, mostro preview")
+			self.showPreview(picon_path)
+			return
+
+		logger.debug("Avvio download...")
+		reactor.callInThread(
+			self._downloadPicon,
+			url,
+			picon_path
+		)
+
+	def _downloadPicon(self, url, picon_path):
+		try:
+			self.removeAllPng()
+
+			makedirs(dirname(picon_path), exist_ok=True)
+			response = requests.get(url, stream=True, timeout=20)
+			response.raise_for_status()
+
+			temp_path = f"{picon_path}.download"
+			with open(temp_path, 'wb') as f:
+				for chunk in response.iter_content(8192):  # Buffer più grande
+					if chunk:  # Filtra keep-alive chunks
+						f.write(chunk)
+
+			if exists(temp_path):
+				rename(temp_path, picon_path)
+				reactor.callFromThread(self.showPreview, picon_path)
+			else:
+				raise Exception("Download file not created")
+
+		except requests.exceptions.RequestException as e:
+			logger.error(f"Download error: {str(e)}")
+			fallback = "/usr/lib/enigma2/python/Plugins/Extensions/PiconCockpit/3.png"
+			reactor.callFromThread(self.showPreview, fallback)
+		except Exception as e:
+			logger.error(f"Unexpected error: {str(e)}")
+			fallback = "/usr/lib/enigma2/python/Plugins/Extensions/PiconCockpit/3.png"
+			reactor.callFromThread(self.showPreview, fallback)
+
+	def showPreview(self, path):
+		fallback_path = "/usr/lib/enigma2/python/Plugins/Extensions/PiconCockpit/3.png"
+
+		if not path or not exists(path):
+			path = fallback_path
+
+		logger.info("Mostro anteprima: %s", path)
+		try:
+			pixmap = LoadPixmap(path, cached=False)
+			if pixmap:
+				self["preview"].instance.setPixmap(pixmap)
+				self["preview"].show()
+			else:
+				logger.error("Pixmap non valida da %s", path)
+				self.showPreview(fallback_path)
+		except Exception as e:
+			logger.error("Errore caricamento preview: %s", str(e))
+			self.showPreview(fallback_path)
+
+	def removeAllPng(self):
+		try:
+			for png_file in glob.glob('/tmp/*.png'):
+				try:
+					remove(png_file)
+					logger.debug("Rimosso: %s", png_file)
+				except OSError as e:
+					logger.warning("Errore rimozione %s: %s", png_file, str(e))
+		except Exception as e:
+			logger.error("Errore pulizia file PNG: %s", str(e))

@@ -17,20 +17,20 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
-
+#
+# 20250328 recoded from @Lululla
 
 from Plugins.Plugin import PluginDescriptor
+from . import _
 from .Version import VERSION
 from .Debug import logger
-from .__init__ import _
 from .PiconCockpit import PiconCockpit
-from .SkinUtils import loadPluginSkin
 from .ConfigInit import ConfigInit
 
 
 def startPiconCockpit(session, **__):
 	logger.info("...")
-	loadPluginSkin("skin.xml")
+	# loadPluginSkin("skin.xml")
 	session.open(PiconCockpit)
 
 
@@ -41,5 +41,5 @@ def Plugins(**__):
 		name=_("PiconCockpit"),
 		description=_("Manage Picons"),
 		where=PluginDescriptor.WHERE_PLUGINMENU,
-		icon="PiconCockpit.svg", fnc=startPiconCockpit
+		icon="PiconCockpit.png", fnc=startPiconCockpit
 	)

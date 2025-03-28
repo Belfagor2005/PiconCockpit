@@ -17,11 +17,14 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
+#
+# 20250328 recoded from @Lululla
 
-
-import sys
+from sys import stdout
 import logging
-from Components.config import config, ConfigSubsection, ConfigDirectory, ConfigSelection  # noqa: F401, pylint: disable=W0611
+
+# from Components.config import config, ConfigSubsection, ConfigDirectory, ConfigSelection
+
 from .Version import ID, PLUGIN
 
 
@@ -30,8 +33,8 @@ streamer = None
 format_string = ID + ": " + "%(levelname)s: %(filename)s: %(funcName)s: %(message)s"
 log_levels = {"ERROR": logging.ERROR, "INFO": logging.INFO, "DEBUG": logging.DEBUG}
 plugin = PLUGIN.lower()
-exec("config.plugins." + plugin + " = ConfigSubsection()")  # noqa: F401, pylint: disable=W0122
-exec("config.plugins." + plugin + ".debug_log_level = ConfigSelection(default='INFO', choices=log_levels.keys())")  # noqa: F401, pylint: disable=W0122
+# exec("config.plugins." + plugin + " = ConfigSubsection()")  # noqa: F401, pylint: disable=W0122
+# exec("config.plugins." + plugin + ".debug_log_level = ConfigSelection(default='INFO', choices=log_levels.keys())")  # noqa: F401, pylint: disable=W0122
 
 
 def initLogging():
@@ -40,7 +43,7 @@ def initLogging():
 	if not logger:
 		logger = logging.getLogger(ID)
 		formatter = logging.Formatter(format_string)
-		streamer = logging.StreamHandler(sys.stdout)
+		streamer = logging.StreamHandler(stdout)
 		streamer.setFormatter(formatter)
 		logger.addHandler(streamer)
 		logger.propagate = False

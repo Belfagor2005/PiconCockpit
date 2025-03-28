@@ -17,7 +17,8 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
-
+#
+# 20250328 recoded from @Lululla
 
 from enigma import eTimer
 
@@ -33,7 +34,10 @@ class DelayTimer():
 			self.timer = eTimer()
 			self.function = function
 			self.args = args
-			self.timer_conn = self.timer.timeout.connect(self.fire)
+			try:
+				self.timer.callback.append(self.fire)
+			except:
+				self.timer_conn = self.timer.timeout.connect(self.fire)
 			self.timer.start(delay, True)
 		else:
 			function(*args)

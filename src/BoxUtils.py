@@ -17,16 +17,17 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
+#
+# 20250328 recoded from @Lululla
 
-
-import os
+from os.path import exists
 from Components.config import config
 from .FileUtils import readFile
 
 
 def dimmOSD(hide):
 	dimm = config.av.osd_alpha.value if hide else 0
-	if os.path.exists("/proc/stb/video/alpha"):
+	if exists("/proc/stb/video/alpha"):
 		device = "/proc/stb/video/alpha"
 	else:  # dream one, dream two
 		device = "/sys/devices/platform/meson-fb/graphics/fb0/osd_plane_alpha"
@@ -36,7 +37,7 @@ def dimmOSD(hide):
 
 def getBoxType():
 	box_type = "dm9XX"
-	if os.path.exists("/proc/stb/info/model"):
+	if exists("/proc/stb/info/model"):
 		box_type = readFile("/proc/stb/info/model")
 		box_type = box_type.replace("\n", "")
 		if box_type == "one":

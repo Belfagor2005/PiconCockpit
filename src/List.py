@@ -17,7 +17,8 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
-
+#
+# 20250328 recoded from @Lululla
 
 from Components.GUIComponent import GUIComponent
 from enigma import eListboxPythonMultiContent, eListbox, RT_HALIGN_LEFT, RT_VALIGN_CENTER
@@ -70,8 +71,13 @@ class List(GUIComponent):
 
 	def postWidgetCreate(self, instance):
 		instance.setContent(self.list)
-		self.instance.setWrapAround(True)
-		self.selectionChanged_conn = instance.selectionChanged.connect(self.selectionChanged)
+		if hasattr(instance, "setWrapAround"):
+			instance.setWrapAround(True)
+		if hasattr(instance, "selectionChanged"):
+			try:
+				self.selectionChanged_conn = instance.selectionChanged.connect(self.selectionChanged)
+			except AttributeError:
+				self.selectionChanged_conn = None
 
 	def preWidgetRemove(self, instance):
 		instance.setContent(None)

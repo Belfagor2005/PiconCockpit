@@ -17,15 +17,14 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
-
+#
+# 20250328 recoded from @Lululla
 
 from Components.config import config, ConfigText, ConfigYesNo, ConfigSelection, ConfigSubsection, ConfigNothing, NoSave
 from .Debug import logger, log_levels, initLogging
 
 
-server_choices = [
-	("http://picons.vuplus-support.org/", "vuplus-support.org"),
-]
+server_choices = [("http://picons.vuplus-support.org/", "VTi: vuplus-support.org"), ]
 
 
 class ConfigInit():

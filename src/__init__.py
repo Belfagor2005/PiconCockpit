@@ -17,7 +17,8 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
-
+#
+# 20250328 recoded from @Lululla
 
 import os
 import gettext

@@ -17,16 +17,18 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
+#
+# 20250328 recoded from @Lululla
 
+import subprocess
+from glob import glob
+from os.path import splitext
 
-import os
-from pipes import quote
-import glob
 from .Debug import logger
 
 
 def stripCutNumber(path):
-	filename, ext = os.path.splitext(path)
+	filename, ext = splitext(path)
 	if len(filename) > 3:
 		if filename[-4] == "_" and filename[-3:].isdigit():
 			filename = filename[:-4]
@@ -53,36 +55,40 @@ def writeFile(path, data):
 
 
 def deleteFile(path):
-	os.popen("rm %s" % quote(path)).read()
+	result = subprocess.run(['rm', '-f', path], capture_output=True, text=True)
+	if result.returncode != 0:
+		print(f"Error deleting file: {result.stderr}")
+	else:
+		print(f"File {path} deleted successfully.")
 
 
 def deleteFiles(path, clear=False):
-	for afile in glob.glob(path):
+	for afile in glob(path):
 		if clear:
 			writeFile(afile, "")
 		deleteFile(afile)
 
 
 def touchFile(path):
-	os.popen("touch %s" % quote(path)).read()
+	subprocess.run(['touch', path], capture_output=True, text=True)
 
 
 def copyFile(src_path, dest_path):
-	os.popen("cp %s %s" % (quote(src_path), quote(dest_path))).read()
+	subprocess.run(['cp', src_path, dest_path], capture_output=True, text=True)
 
 
 def renameFile(src_path, dest_path):
-	os.popen("mv %s %s" % (quote(src_path), quote(dest_path))).read()
+	subprocess.run(['mv', src_path, dest_path], capture_output=True, text=True)
 
 
 def createDirectory(path):
-	os.popen("mkdir -p %s" % quote(path)).read()
+	subprocess.run(['mkdir', '-p', path], capture_output=True, text=True)
 
 
 def createSymlink(src, dst):
 	logger.info("link: src: %s > %s", src, dst)
-	os.symlink(src, dst)
+	subprocess.run(['ln', '-s', src, dst], capture_output=True, text=True)
 
 
 def deleteDirectory(path):
-	os.popen("rm -rf %s" % quote(path)).read()
+	subprocess.run(['rm', '-rf', path], capture_output=True, text=True)

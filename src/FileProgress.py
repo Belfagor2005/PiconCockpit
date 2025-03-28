@@ -17,19 +17,37 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
-
+#
+# 20250328 recoded from @Lululla
 
 from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.Button import Button
 from Components.Slider import Slider
 from Screens.Screen import Screen
-from .__init__ import _
+from . import _
 from .Debug import logger
 from .BoxUtils import dimmOSD
 
 
 class FileProgress(Screen):
+	skin = """
+			<screen name="FileProgress" position="5,5" size="900,250" title="FileProgress..." flags="wfNoBorder">
+				<eLabel position="10,170" size="880,20" backgroundColor="#202020" transparent="0" zPosition="0" />
+				<widget name="name" position="10,105" size="880,40" borderWidth="1" borderColor="#cccccc" zPosition="1" />
+				<widget name="slider1" position="10,80" size="880,8" borderWidth="1" borderColor="#cccccc" zPosition="2" />
+				<widget source="status" render="Label" position="80,32" size="750,36" font="Regular;30" halign="center" valign="bottom" foregroundColor="#ffffff" backgroundColor="#000000" transparent="1" />
+				<widget name="operation" position="10,150" size="880,40" borderWidth="1" borderColor="#cccccc" zPosition="1" />
+				<widget source="key_red" render="Label" position="12,199" size="200,45" zPosition="11" font="Regular; 30" valign="center" halign="center" backgroundColor="background" transparent="1" foregroundColor="white" />
+				<widget source="key_green" render="Label" position="215,201" size="200,45" zPosition="11" font="Regular; 30" valign="center" halign="center" backgroundColor="background" transparent="1" foregroundColor="white" />
+				<widget source="key_yellow" render="Label" position="420,199" size="200,45" zPosition="11" font="Regular; 30" valign="center" halign="center" backgroundColor="background" transparent="1" foregroundColor="white" />
+				<widget source="key_blue" render="Label" position="639,199" size="200,45" zPosition="11" font="Regular; 30" valign="center" halign="center" backgroundColor="background" transparent="1" foregroundColor="white" />
+				<eLabel backgroundColor="red" position="14,244" size="200,6" zPosition="11" />
+				<eLabel backgroundColor="green" position="219,244" size="200,6" zPosition="11" />
+				<eLabel backgroundColor="yellow" position="427,244" size="200,6" zPosition="11" />
+				<eLabel backgroundColor="blue" position="642,244" size="200,6" zPosition="11" />
+			</screen>
+			"""
 
 	def __init__(self, session):
 		logger.debug("...")

@@ -17,11 +17,12 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
-
+#
+# 20250328 recoded from @Lululla
 
 from Screens.MessageBox import MessageBox
 from .Version import PLUGIN, VERSION, COPYRIGHT, LICENSE
-from .__init__ import _
+from . import _
 
 
 def about(session):

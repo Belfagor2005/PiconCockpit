@@ -17,7 +17,8 @@
 #
 # For more information on the GNU General Public License see:
 # <http://www.gnu.org/licenses/>.
-
+#
+# 20250328 recoded from @Lululla
 
 from Components.ActionMap import ActionMap
 from Components.Sources.List import List
@@ -25,36 +26,43 @@ from Components.Sources.StaticText import StaticText
 from Screens.Screen import Screen
 from Tools.BoundFunction import boundFunction
 from .About import about
-from .__init__ import _
-from .SkinUtils import getSkinName
+from . import _
 
 
 class CockpitContextMenu(Screen):
-	def __init__(self, session, csel):
-		Screen.__init__(self, session)
-		self.skinName = getSkinName("CockpitContextMenu")
-		self["title"] = StaticText()
+    skin = """
+            <screen name="PICCockpitContextMenu" position="center,center" size="840,730" title="">
+                <widget enableWrapAround="1" itemHeight="45" position="10,10" render="Listbox" scrollbarMode="showOnDemand" size="820,680" source="menu">
+                    <convert type="StringList"/>
+                </widget>
+            </screen>
+            """
 
-		self["actions"] = ActionMap(
-			["OkCancelActions", "ColorActions", "MenuActions"],
-			{
-				"cancel":	self.close,
-				"ok":		self.ok,
-				"red":		self.close,
-				"menu":		csel.openConfigScreen,
-			},
-			-1
-		)
+    def __init__(self, session, csel):
 
-		menu = []
-		self.setTitle(_("Select function"))
-		menu.append((_("Picon Download"), (csel.green, True)))
-		menu.append((_("Setup"), (csel.openConfigScreen, True)))
-		menu.append((_("About"), (boundFunction(about, session), True)))
-		self["menu"] = List(menu)
+        Screen.__init__(self, session)
+        self["title"] = StaticText()
 
-	def ok(self):
-		current_entry = self["menu"].getCurrent()
-		current_entry[1][0]()  # execute function
-		if current_entry[1][1]:
-			self.close()
+        self["actions"] = ActionMap(
+            ["OkCancelActions", "ColorActions", "MenuActions"],
+            {
+                "cancel":   self.close,
+                "ok":       self.ok,
+                "red":      self.close,
+                "menu":     csel.openConfigScreen,
+            },
+            -1
+        )
+
+        menu = []
+        self.setTitle(_("Select function"))
+        menu.append((_("Picon Download"), (csel.green, True)))
+        menu.append((_("Setup"), (csel.openConfigScreen, True)))
+        menu.append((_("About"), (boundFunction(about, session), True)))
+        self["menu"] = List(menu)
+
+    def ok(self):
+        current_entry = self["menu"].getCurrent()
+        current_entry[1][0]()  # execute function
+        if current_entry[1][1]:
+            self.close()
