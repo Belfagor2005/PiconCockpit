@@ -1,6 +1,10 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/c5a340b3d6e34a44b19725fe6288686c)](https://www.codacy.com/gh/dream-alpha/PiconCockpit/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dream-alpha/PiconCockpit&amp;utm_campaign=Badge_Grade)
 [![Gemfury](https://badge.fury.io/fp/gemfury.svg)](https://gemfury.com/f/partner)
 
+[![Python package](https://github.com/Belfagor2005/PiconCockpit/actions/workflows/pylint.yml/badge.svg)](https://github.com/Belfagor2005/PiconCockpit/actions/workflows/pylint.yml)
+
+
+
 # PiconCockpit (PIC)
 
 ![Screenshot](pic.png)
