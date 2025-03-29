@@ -35,17 +35,15 @@ from Tools.LoadPixmap import LoadPixmap
 import requests
 from requests.exceptions import RequestException
 from twisted.internet import reactor
-# from twisted.internet import threads
 
-from .Debug import logger
 from . import _
 from .FileUtils import readFile, createDirectory
 from .ConfigScreen import ConfigScreen
 from .PiconDownloadProgress import PiconDownloadProgress
 from .ConfigInit import ConfigInit
-from .CockpitContextMenu import CockpitContextMenu
 from .List import List
 from .ServiceData import getServiceList, getTVBouquets, getRadioBouquets
+from .Debug import logger
 
 picon_info_file = "picon_info.txt"
 picon_list_file = "zz_picon_list.txt"
@@ -54,23 +52,25 @@ picon_list_file = "zz_picon_list.txt"
 class PiconCockpit(Screen):
 
 	skin = """
-		<screen name="PICPiconCockpit" position="center,110" size="1800,930">
-			<ePixmap pixmap="skin_default/buttons/red.svg" position="10,5" size="300,70" />
-			<ePixmap pixmap="skin_default/buttons/green.svg" position="310,5" size="300,70" />
-			<ePixmap pixmap="skin_default/buttons/yellow.svg" position="610,5" size="300,70" />
-			<ePixmap pixmap="skin_default/buttons/blue.svg" position="910,5" size="300,70" />
+		<screen name="PICPiconCockpit" position="0,0" size="1920,1080" title="" flags="wfNoBorder">
+			<widget source="session.VideoPicture" render="Pig" position="1406,119" zPosition="20" size="491,319" backgroundColor="transparent" transparent="0" cornerRadius="14" />
+			<eLabel backgroundColor="#00ff0000" position="11,74" size="300,8" zPosition="12" />
+			<eLabel backgroundColor="#0000ff00" position="307,74" size="300,8" zPosition="12" />
+			<eLabel backgroundColor="#00ffff00" position="612,74" size="300,8" zPosition="12" />
+			<eLabel backgroundColor="#000000ff" position="915,74" size="300,8" zPosition="12" />
 			<widget backgroundColor="#f23d21" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_red" position="10,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
 			<widget backgroundColor="#389416" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_green" position="310,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
 			<widget backgroundColor="#e6bd00" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_yellow" position="610,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
 			<widget backgroundColor="#0064c7" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_blue" position="910,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
-			<widget font="Regular;34" halign="right" position="1240,0" render="Label" size="400,70" source="global.CurrentTime" valign="center">
+			<widget font="Regular;34" halign="right" position="1239,5" render="Label" size="400,70" source="global.CurrentTime" valign="center">
 				<convert type="ClockToText">Date</convert>
 			</widget>
-			<widget font="Regular;34" halign="right" position="1650,0" render="Label" size="120,70" source="global.CurrentTime" valign="center">
+			<widget font="Regular;34" halign="right" position="1650,5" render="Label" size="120,70" source="global.CurrentTime" valign="center">
 				<convert type="ClockToText">Default</convert>
 			</widget>
-			<widget name="preview" position="1386,97" scale="aspect" size="400,240" zPosition="5" />
-			<widget font="Regular;30" itemHeight="40" name="list" position="5,100" scrollbarMode="showOnDemand" size="1370,800" transparent="1" />
+			<eLabel backgroundColor="#aaaaaa" position="10,75" size="1780,1" />
+			<widget name="preview" position="1411,504" scale="aspect" size="467,302" zPosition="5" />
+			<widget font="Regular;30" itemHeight="40" name="list" position="5,105" scrollbarMode="showOnDemand" size="1387,880" transparent="1" />
 		</screen>
 		"""
 
@@ -80,12 +80,13 @@ class PiconCockpit(Screen):
 		Screen.__init__(self, session)
 		self["list"] = List()
 		self["actions"] = ActionMap(
-			["OkCancelActions", "SetupActions", "ColorActions", "MenuActions"],
+			["OkCancelActions", "SetupActions", "ColorActions", "MenuActions", "EPGSelectActions"],
 			{
-				"menu":     self.openContextMenu,
+				"menu":     self.openConfigScreen,  # openContextMenu,
 				"cancel":   self.exit,
 				"red":      self.exit,
 				"green":    self.green,
+				"info":     self.infoAb,
 
 				"left": self.keyLeft,
 				"down": self.keyDown,
@@ -185,7 +186,6 @@ class PiconCockpit(Screen):
 	def gotPiconSetInfo(self, result):
 		logger.info("Download complete: %s", result)
 		self.createList(True)
-		# self.onSelectionChanged()
 
 	def downloadError(self, error, url):
 		logger.error("Download failed for %s: %s", url, str(error))
@@ -195,18 +195,37 @@ class PiconCockpit(Screen):
 			type=MessageBox.TYPE_ERROR
 		)
 
-	def openContextMenu(self):
-		self.session.open(
-			CockpitContextMenu,
-			self,
-		)
-
 	def openConfigScreen(self):
 		logger.info("...")
 		picon_set = self["list"].getCurrent()
 		if picon_set:
 			self.last_picon_set = picon_set[4]
 		self.session.openWithCallback(self.openConfigScreenCallback, ConfigScreen, config.plugins.piconcockpit)
+
+	def infoAb(self):
+		try:
+			from .Version import PLUGIN, VERSION, COPYRIGHT, LICENSE
+			about_text = (
+				_("Plugin") + ": " + PLUGIN + "\n\n" +
+				_("Versione") + ": " + VERSION + "\n\n" +
+				_("Copyright") + ": " + COPYRIGHT + "\n\n" +
+				_("Licenza") + ": " + LICENSE
+			)
+
+			self.session.open(
+				MessageBox,
+				about_text,
+				MessageBox.TYPE_INFO,
+				timeout=10
+			)
+		except Exception as e:
+			logger.error("Errore nell'apertura delle informazioni: %s", str(e))
+			self.session.open(
+				MessageBox,
+				_("Informazioni sul plugin non disponibili"),
+				MessageBox.TYPE_ERROR,
+				timeout=5
+			)
 
 	def openConfigScreenCallback(self, _result=None):
 		logger.info("...")

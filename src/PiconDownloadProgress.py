@@ -26,27 +26,27 @@ from os.path import join, dirname
 from twisted.internet import reactor
 
 from .Debug import logger
-from .__init__ import _
+from . import _
 from .FileProgress import FileProgress
 from .DelayTimer import DelayTimer
 
 
 class PiconDownloadProgress(FileProgress):
 	skin = """
-			<screen name="PICPiconDownloadProgress" position="center,center" size="1220,305" title="">
-				<ePixmap pixmap="skin_default/buttons/red.svg" position="10,5" size="300,70"/>
-				<ePixmap pixmap="skin_default/buttons/green.svg" position="310,5" size="300,70"/>
-				<ePixmap pixmap="skin_default/buttons/yellow.svg" position="610,5" size="300,70"/>
-				<ePixmap pixmap="skin_default/buttons/blue.svg" position="910,5" size="300,70"/>
-				<widget backgroundColor="#f23d21" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_red" position="10,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
-				<widget backgroundColor="#389416" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_green" position="310,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
-				<widget backgroundColor="#e6bd00" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_yellow" position="610,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
-				<widget backgroundColor="#0064c7" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_blue" position="910,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
-				<eLabel backgroundColor="grey" position="10,75" size="1200,1"/>
-				<widget font="Regular;32" halign="left" name="operation" position="10,90" size="1200,43" transparent="1" valign="center"/>
-				<widget name="slider1" position="10,150" size="1200,25"/>
-				<widget font="Regular;32" halign="left" name="name" position="10,192" size="1200,43" transparent="1" valign="center"/>
-				<widget font="Regular;32" halign="left" name="status" position="10,245" size="1200,43" transparent="1" valign="center"/>
+			<screen name="PiconDownloadProgress" position="5,5" size="851,204" title="PiconDownloadProgress" flags="wfNoBorder">
+				<widget source="key_red" render="Label" position="12,144" size="200,45" zPosition="11" font="Regular; 30" valign="center" halign="center" backgroundColor="background" transparent="1" foregroundColor="white" />
+				<widget source="key_green" render="Label" position="220,144" size="200,45" zPosition="11" font="Regular; 30" valign="center" halign="center" backgroundColor="background" transparent="1" foregroundColor="white" />
+				<widget source="key_yellow" render="Label" position="430,144" size="200,45" zPosition="11" font="Regular; 30" valign="center" halign="center" backgroundColor="background" transparent="1" foregroundColor="white" />
+				<widget source="key_blue" render="Label" position="639,144" size="200,45" zPosition="11" font="Regular; 30" valign="center" halign="center" backgroundColor="background" transparent="1" foregroundColor="white" />
+				<eLabel backgroundColor="#00ff0000" position="12,190" size="200,8" zPosition="12" />
+				<eLabel backgroundColor="#0000ff00" position="218,190" size="200,8" zPosition="12" />
+				<eLabel backgroundColor="#00ffff00" position="429,190" size="200,8" zPosition="12" />
+				<eLabel backgroundColor="#000000ff" position="640,190" size="200,8" zPosition="12" />
+				<eLabel position="30,50" size="800,10" backgroundColor="#202020" transparent="0" zPosition="0" />
+				<widget name="name" position="30,60" size="800,40" borderWidth="1" borderColor="#cccccc" zPosition="1" font="Regular; 24" halign="center" />
+				<widget name="slider1" position="30,50" size="800,8" borderWidth="1" borderColor="#cccccc" zPosition="2" />
+				<widget source="status" render="Label" position="28,102" size="800,36" font="Regular;30" halign="center" valign="bottom" foregroundColor="#ffffff" backgroundColor="#000000" transparent="1" />
+				<widget name="operation" position="32,5" size="800,40" borderWidth="1" borderColor="#cccccc" zPosition="1" font="Regular; 24" halign="center" />
 			</screen>
 			"""
 

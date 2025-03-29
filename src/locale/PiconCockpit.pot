@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-28 17:01+0100\n"
+"POT-Creation-Date: 2025-03-29 11:48+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -19,39 +19,7 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: About.py:30
-msgid "Plugin"
-msgstr ""
-
-#: About.py:31
-msgid "Version"
-msgstr ""
-
-#: About.py:32
-msgid "Copyright"
-msgstr ""
-
-#: About.py:33
-msgid "License"
-msgstr ""
-
-#: CockpitContextMenu.py:58
-msgid "Select function"
-msgstr ""
-
-#: CockpitContextMenu.py:59 PiconDownloadProgress.py:62
-msgid "Picon Download"
-msgstr ""
-
-#: CockpitContextMenu.py:60 ConfigScreen.py:114
-msgid "Setup"
-msgstr ""
-
-#: CockpitContextMenu.py:61
-msgid "About"
-msgstr ""
-
-#: ConfigScreen.py:92 FileProgress.py:61
+#: ConfigScreen.py:92 FileProgress.py:62
 msgid "Cancel"
 msgstr ""
 
@@ -61,6 +29,10 @@ msgstr ""
 
 #: ConfigScreen.py:94
 msgid "Defaults"
+msgstr ""
+
+#: ConfigScreen.py:114 ~CockpitContextMenu.py:60
+msgid "Setup"
 msgstr ""
 
 #: ConfigScreen.py:157
@@ -91,148 +63,200 @@ msgstr ""
 msgid "Path does not exist"
 msgstr ""
 
-#: ConfigScreenInit.py:45
+#: ConfigScreenInit.py:46
 msgid "COCKPIT"
 msgstr ""
 
-#: ConfigScreenInit.py:46
+#: ConfigScreenInit.py:47
 msgid "Picon directory"
 msgstr ""
 
-#: ConfigScreenInit.py:46
+#: ConfigScreenInit.py:47
 msgid "Select the directory the picons are stored in."
 msgstr ""
 
-#: ConfigScreenInit.py:47
+#: ConfigScreenInit.py:48
 msgid "Picon server"
 msgstr ""
 
-#: ConfigScreenInit.py:47
+#: ConfigScreenInit.py:48
 msgid "Select the picon server."
 msgstr ""
 
-#: ConfigScreenInit.py:48
+#: ConfigScreenInit.py:49
 msgid "Download all picons"
 msgstr ""
 
-#: ConfigScreenInit.py:48
+#: ConfigScreenInit.py:49
 msgid "Should all picons be downloaded vs. just the picons in favorites?"
 msgstr ""
 
-#: ConfigScreenInit.py:49
+#: ConfigScreenInit.py:50
 msgid "Delete picon directory"
 msgstr ""
 
-#: ConfigScreenInit.py:49
+#: ConfigScreenInit.py:50
 msgid "Should the picon directory be cleaned before the download?"
 msgstr ""
 
-#: ConfigScreenInit.py:50
+#: ConfigScreenInit.py:51
 msgid "FILTER"
 msgstr ""
 
-#: ConfigScreenInit.py:51
+#: ConfigScreenInit.py:52
 msgid "Satellite"
 msgstr ""
 
-#: ConfigScreenInit.py:51
+#: ConfigScreenInit.py:52
 msgid "Select the satellite."
 msgstr ""
 
-#: ConfigScreenInit.py:52
+#: ConfigScreenInit.py:53
 msgid "Creator"
 msgstr ""
 
-#: ConfigScreenInit.py:52
+#: ConfigScreenInit.py:53
 msgid "Select the creator."
 msgstr ""
 
-#: ConfigScreenInit.py:53
+#: ConfigScreenInit.py:54
 msgid "Size"
 msgstr ""
 
-#: ConfigScreenInit.py:53
+#: ConfigScreenInit.py:54
 msgid "Select the picon size."
 msgstr ""
 
-#: ConfigScreenInit.py:54
+#: ConfigScreenInit.py:55
 msgid "Color depth"
 msgstr ""
 
-#: ConfigScreenInit.py:54
+#: ConfigScreenInit.py:55
 msgid "Select the color depth."
 msgstr ""
 
-#: ConfigScreenInit.py:55
+#: ConfigScreenInit.py:56
 msgid "DEBUG"
 msgstr ""
 
-#: ConfigScreenInit.py:56
+#: ConfigScreenInit.py:58
 msgid "Log level"
 msgstr ""
 
-#: ConfigScreenInit.py:56
-msgid "Select the debug log level."
+#: ConfigScreenInit.py:58
+msgid "DEBUG=detailed log, INFO=normal, ERROR=errors only"
 msgstr ""
 
-#: FileProgress.py:62
+#: Debug.py:62
+msgid "Error"
+msgstr ""
+
+#: Debug.py:63
+msgid "Information"
+msgstr ""
+
+#: Debug.py:64
+msgid "Debug"
+msgstr ""
+
+#: FileProgress.py:63
 msgid "Close"
 msgstr ""
 
-#: FileProgress.py:65
+#: FileProgress.py:66
 msgid "Hide"
 msgstr ""
 
-#: FileProgress.py:98
+#: FileProgress.py:99
 msgid "Cancelling, please wait"
 msgstr ""
 
-#: FileProgress.py:121
+#: FileProgress.py:122
 msgid "Processing"
 msgstr ""
 
-#: FileProgress.py:121
+#: FileProgress.py:122
 msgid "of"
 msgstr ""
 
-#: FileProgress.py:129
+#: FileProgress.py:130
 msgid "Done"
 msgstr ""
 
-#: FileProgress.py:145 FileProgress.py:161
+#: FileProgress.py:146 FileProgress.py:162
 msgid "Cancelled"
 msgstr ""
 
-#: FileProgress.py:151 PiconDownloadProgress.py:69
+#: FileProgress.py:152 PiconDownloadProgress.py:67
 msgid "Please wait"
 msgstr ""
 
-#: PiconCockpit.py:94 plugin.py:40
+#: PiconCockpit.py:100 plugin.py:41
 msgid "PiconCockpit"
 msgstr ""
 
-#: PiconCockpit.py:97
+#: PiconCockpit.py:103
 msgid "Download"
 msgstr ""
 
-#: PiconCockpit.py:98
+#: PiconCockpit.py:104
 msgid "Exit"
 msgstr ""
 
-#: PiconCockpit.py:175
+#: PiconCockpit.py:192
 #, python-format
 msgid "Download failed: %s"
 msgstr ""
 
-#: PiconCockpit.py:253
+#: PiconCockpit.py:214 ~About.py:29
+msgid "Plugin"
+msgstr ""
+
+#: PiconCockpit.py:215
+msgid "Versione"
+msgstr ""
+
+#: PiconCockpit.py:216 ~About.py:31
+msgid "Copyright"
+msgstr ""
+
+#: PiconCockpit.py:217
+msgid "Licenza"
+msgstr ""
+
+#: PiconCockpit.py:230
+msgid "Informazioni sul plugin non disponibili"
+msgstr ""
+
+#: PiconCockpit.py:276
 #, python-format
 msgid "Failed to start download: %s"
 msgstr ""
 
-#: PiconDownloadProgress.py:135
+#: PiconDownloadProgress.py:60 ~CockpitContextMenu.py:59
+msgid "Picon Download"
+msgstr ""
+
+#: PiconDownloadProgress.py:123
 msgid "Initializing"
 msgstr ""
 
-#: plugin.py:41
+#: plugin.py:42
 msgid "Manage Picons"
+msgstr ""
+
+#: ~About.py:30
+msgid "Version"
+msgstr ""
+
+#: ~About.py:32
+msgid "License"
+msgstr ""
+
+#: ~CockpitContextMenu.py:58
+msgid "Select function"
+msgstr ""
+
+#: ~CockpitContextMenu.py:61
+msgid "About"
 msgstr ""

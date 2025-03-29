@@ -1,3 +1,3 @@
 installdir = $(libdir)/enigma2/python/Plugins/Extensions/PiconCockpit
-SUBDIRS = skin
+# SUBDIRS = skin
 install_PYTHON = *.py *.svg

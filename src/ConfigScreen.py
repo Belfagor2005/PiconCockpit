@@ -33,7 +33,7 @@ from Screens.VirtualKeyBoard import VirtualKeyBoard
 from Screens.Standby import TryQuitMainloop
 from enigma import eTimer, ePoint
 
-from .__init__ import _
+from . import _
 from .Version import PLUGIN
 from .Debug import logger, log_levels, setLogLevel
 from .ConfigScreenInit import ConfigScreenInit
@@ -41,25 +41,26 @@ from .ConfigScreenInit import ConfigScreenInit
 
 class ConfigScreen(ConfigScreenInit, ConfigListScreen, Screen):
 	skin = """
-			<screen name="ConfigScreen" position="center,110" size="1800,930" title="">
-				<ePixmap pixmap="skin_default/buttons/red.svg" position="10,5" size="300,70"/>
-				<ePixmap pixmap="skin_default/buttons/green.svg" position="310,5" size="300,70"/>
-				<ePixmap pixmap="skin_default/buttons/yellow.svg" position="610,5" size="300,70"/>
-				<ePixmap pixmap="skin_default/buttons/blue.svg" position="910,5" size="300,70"/>
-				<widget backgroundColor="#f23d21" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_red" position="10,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
-				<widget backgroundColor="#389416" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_green" position="310,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
-				<widget backgroundColor="#e6bd00" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_yellow" position="610,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
-				<widget backgroundColor="#0064c7" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_blue" position="910,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1"/>
-				<widget font="Regular;34" halign="right" position="1240,0" render="Label" size="400,70" source="global.CurrentTime" valign="center">
-					<convert type="ClockToText">Date</convert>
-				</widget>
-				<widget font="Regular;34" halign="right" position="1650,0" render="Label" size="120,70" source="global.CurrentTime" valign="center">
-					<convert type="ClockToText">Default</convert>
-				</widget>
-				<eLabel backgroundColor="#aaaaaa" position="10,80" size="1780,1"/>
-				<widget enableWrapAround="1" itemHeight="45" name="config" position="10,90" scrollbarMode="showOnDemand" size="1780,630"/>
-				<eLabel backgroundColor="#aaaaaa" position="10,730" size="1780,1"/>
-				<widget font="Regular;32" halign="center" position="10,740" render="Label" size="1780,180" source="help" valign="center"/>
+			<screen name="ConfigScreen" position="0,0" size="1920,1080" title="" flags="wfNoBorder">
+			<widget source="session.VideoPicture" render="Pig" position="1406,119" zPosition="20" size="491,319" backgroundColor="transparent" transparent="0" cornerRadius="14" />
+				<eLabel backgroundColor="#00ff0000" position="11,74" size="300,8" zPosition="12" />
+				<eLabel backgroundColor="#0000ff00" position="307,74" size="300,8" zPosition="12" />
+				<eLabel backgroundColor="#00ffff00" position="612,74" size="300,8" zPosition="12" />
+				<eLabel backgroundColor="#000000ff" position="915,74" size="300,8" zPosition="12" />
+				<widget backgroundColor="#f23d21" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_red" position="10,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
+				<widget backgroundColor="#389416" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_green" position="310,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
+				<widget backgroundColor="#e6bd00" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_yellow" position="610,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
+				<widget backgroundColor="#0064c7" font="Regular;30" foregroundColor="#ffffff" halign="center" name="key_blue" position="910,5" shadowColor="#000000" shadowOffset="-2,-2" size="300,70" transparent="1" valign="center" zPosition="1" />
+			<widget font="Regular;34" halign="right" position="1239,5" render="Label" size="400,70" source="global.CurrentTime" valign="center">
+				<convert type="ClockToText">Date</convert>
+			</widget>
+			<widget font="Regular;34" halign="right" position="1650,5" render="Label" size="120,70" source="global.CurrentTime" valign="center">
+				<convert type="ClockToText">Default</convert>
+			</widget>
+				<eLabel backgroundColor="#aaaaaa" position="10,75" size="1780,1" />
+				<widget enableWrapAround="1" itemHeight="45" name="config" position="10,90" scrollbarMode="showOnDemand" size="1352,630" />
+				<eLabel backgroundColor="#aaaaaa" position="10,730" size="1780,1" />
+				<widget font="Regular;32" halign="center" position="12,758" render="Label" size="1780,180" source="help" valign="center" />
 			</screen>
 			"""
 

@@ -54,7 +54,8 @@ class ConfigScreenInit():
 			(_("Size"), config.plugins.piconcockpit.size, None, None, 0, [], _("Select the picon size.")),
 			(_("Color depth"), config.plugins.piconcockpit.bit, None, None, 0, [], _("Select the color depth.")),
 			(self.section, _("DEBUG"), None, None, 2, [], ""),
-			(_("Log level"), config.plugins.piconcockpit.debug_log_level, self.setLogLevel, None, 2, [], _("Select the debug log level.")),
+			# (_("Log level"), config.plugins.piconcockpit.debug_log_level, self.setLogLevel, None, 2, [], _("Select the debug log level.")),
+			(_("Log level"), config.plugins.piconcockpit.debug_log_level, self.setLogLevel, None, 2, [], _("DEBUG=detailed log, INFO=normal, ERROR=errors only")),
 		]
 
 	@staticmethod

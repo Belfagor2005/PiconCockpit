@@ -23,7 +23,7 @@
 from sys import stdout
 import logging
 
-from Components.config import config, ConfigSubsection, ConfigDirectory, ConfigSelection
+from Components.config import config, ConfigSubsection, ConfigSelection
 
 from .Version import ID, PLUGIN
 
@@ -33,13 +33,33 @@ streamer = None
 format_string = ID + ": " + "%(levelname)s: %(filename)s: %(funcName)s: %(message)s"
 log_levels = {"ERROR": logging.ERROR, "INFO": logging.INFO, "DEBUG": logging.DEBUG}
 plugin = PLUGIN.lower()
-exec("config.plugins." + plugin + " = ConfigSubsection()")  # noqa: F401, pylint: disable=W0122
-exec("config.plugins." + plugin + ".debug_log_level = ConfigSelection(default='INFO', choices=log_levels.keys())")  # noqa: F401, pylint: disable=W0122
+
+
+if not hasattr(config.plugins, 'piconcockpit'):
+	config.plugins.piconcockpit = ConfigSubsection()
+
+
+log_levels = {
+	"ERROR": logging.ERROR,
+	"INFO": logging.INFO,
+	"DEBUG": logging.DEBUG
+}
+
+config.plugins.piconcockpit.debug_log_level = ConfigSelection(
+	default="INFO",
+	choices=[(k, k) for k in log_levels]
+)
+
+
+logger = None
+streamer = None
+ID = "PiconCockpit"
+format_string = "%(name)s %(levelname)s: %(message)s"
 
 
 def initLogging():
-	global logger
-	global streamer
+	global logger, streamer
+
 	if not logger:
 		logger = logging.getLogger(ID)
 		formatter = logging.Formatter(format_string)
@@ -47,10 +67,19 @@ def initLogging():
 		streamer.setFormatter(formatter)
 		logger.addHandler(streamer)
 		logger.propagate = False
-		setLogLevel(log_levels[eval("config.plugins." + plugin + ".debug_log_level").value])
+
+		try:
+			level = config.plugins.piconcockpit.debug_log_level.value
+			logger.setLevel(log_levels[level])
+			logger.info("Logger inizializzato a livello: %s", level)
+		except Exception as e:
+			logger.setLevel(logging.INFO)
+			logger.error("Errore inizializzazione logger: %s", str(e))
 
 
-def setLogLevel(level):
+def setLogLevel():
+	level_name = config.plugins.piconcockpit.debug_log_level.value
+	level = log_levels[level_name]
 	logger.setLevel(level)
 	streamer.setLevel(level)
-	logger.info("level: %s", level)
+	logger.log(level, "Livello log impostato a: %s", level_name)
