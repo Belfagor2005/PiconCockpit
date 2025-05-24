@@ -383,7 +383,7 @@ class PiconCockpit(Screen):
 					signature = "%s | %s - %s | %s | %s | %s" % (satellite, creator, name, size, bit, uploader)
 					name = signature + " | %s" % date
 					if config.plugins.piconcockpit.satellite.value in ["all", satellite] and\
-							config.plugins.piconcockpit.creator.value in ["all", creator] and\
+                            config.plugins.piconcockpit.creator.value in ["all", creator] and\
 							config.plugins.piconcockpit.size.value in ["all", size] and\
 							config.plugins.piconcockpit.bit.value in ["all", bit]:
 						picon_list.append(((name, dir_url, pic_url, identifier, signature), ))

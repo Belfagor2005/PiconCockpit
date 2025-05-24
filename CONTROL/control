@@ -1,6 +1,9 @@
-Description: PiconCockpit
-Maintainer: dream-alpha
 Package: enigma2-plugin-extensions-piconcockpit
-Version: 5.6.6
+Version: 5.6.9
+Section: misc
+Priority: optional
 Architecture: all
-Depends: python-twisted
+Maintainer: dream-alpha - Lululla
+Description: PiconCockpit
+Source: enigma2-plugin-extensions-apsattv
+Homepage: *
